@@ -6,22 +6,25 @@ import {
 import { registerDto } from './dtos/register.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './shemas/user.schema';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { RefreshToken } from './shemas/refresh-token.schema';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepositoy: Repository<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(RefreshToken) private readonly tokenRepository: Repository<RefreshToken>,
     private jwtService: JwtService,
   ) {}
 
   async register(registerData: registerDto) {
     const { email, password, username } = registerData;
 
-    const emailOrUsernameExist = await this.userRepositoy.findOne({
+    const emailOrUsernameExist = await this.userRepository.findOne({
       where: [{ email }, { username }],
     });
     if (emailOrUsernameExist) {
@@ -30,19 +33,19 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const user = this.userRepositoy.create({
+    const user = this.userRepository.create({
       username,
       email,
       password: hashedPassword,
     });
 
-    return this.userRepositoy.save(user);
+    return this.userRepository.save(user);
   }
 
   async login(Credentials: LoginDto) {
     const { email, password } = Credentials;
 
-    const user = await this.userRepositoy.findOne({
+    const user = await this.userRepository.findOne({
       where: {
         email,
       },
@@ -60,12 +63,56 @@ export class AuthService {
       );
     }
 
-    return this.generateUserToken(user.id);
+    const tokens = await this.generateUserToken(user.id);
+
+    return {
+      ...tokens,
+      username: user.username,
+    }
+  }
+
+  async refreshTokens(refreshToken: string) {
+    const token = await this.tokenRepository.findOne({
+      where: {
+        token: refreshToken,
+        expiryDate: MoreThanOrEqual(new Date())
+      }
+    });
+
+    if (!token) {
+      throw new UnauthorizedException("Invalid refresh token");
+    }
+
+    await this.tokenRepository.remove(token);
+
+    return this.generateUserToken(token.userId);
   }
 
   async generateUserToken(userId) {
-    const accessToken = this.jwtService.sign({userId}, {expiresIn: '1h' });
+    const accessToken = this.jwtService.sign({ userId }, { expiresIn: '1h' });
+    const refreshToken = randomUUID();
 
-    return {accessToken};
+    await this.storeRefreshToken(refreshToken, userId);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async storeRefreshToken(token: string, userId) {
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 1);
+
+    await this.tokenRepository
+      .createQueryBuilder()
+      .delete()
+      .from(RefreshToken)
+      .where("userId = :userId", { userId })
+      .execute();
+
+    const newToken = await this.tokenRepository.create({ token, userId, expiryDate });
+
+    return this.tokenRepository.save(newToken);
   }
 }
