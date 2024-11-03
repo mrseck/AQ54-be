@@ -4,14 +4,24 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth/shemas/user.schema';
 import { AuthModule } from './auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import { config } from 'process';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (config) => ({
+        secret: config.get('JWT_SECRET'),
+      }),
+      global: true,
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule, AuthModule],
+      imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
 
         return {
@@ -31,6 +41,7 @@ import { AuthModule } from './auth/auth.module';
       },
       inject: [ConfigService],
     }),
+    AuthModule,
   ],
 })
 export class AppModule {}
