@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { registerDto } from './dtos/register.dto';
@@ -17,7 +18,8 @@ import { randomUUID } from 'crypto';
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(RefreshToken) private readonly tokenRepository: Repository<RefreshToken>,
+    @InjectRepository(RefreshToken)
+    private readonly tokenRepository: Repository<RefreshToken>,
     private jwtService: JwtService,
   ) {}
 
@@ -68,19 +70,45 @@ export class AuthService {
     return {
       ...tokens,
       username: user.username,
+    };
+  }
+
+  async changePassword(userId, oldPassword: string, newPassword: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!passwordMatch) {
+      throw new UnauthorizedException(
+        'Wrong Password ! please check the password you provided and try again',
+      );
+    }
+
+    const NewHashedPassword = await bcrypt.hash(newPassword, 12);
+
+    user.password = NewHashedPassword;
+
+    await this.userRepository.save(user);
   }
 
   async refreshTokens(refreshToken: string) {
     const token = await this.tokenRepository.findOne({
       where: {
         token: refreshToken,
-        expiryDate: MoreThanOrEqual(new Date())
-      }
+        expiryDate: MoreThanOrEqual(new Date()),
+      },
     });
 
     if (!token) {
-      throw new UnauthorizedException("Invalid refresh token");
+      throw new UnauthorizedException('Invalid refresh token');
     }
 
     await this.tokenRepository.remove(token);
@@ -108,10 +136,14 @@ export class AuthService {
       .createQueryBuilder()
       .delete()
       .from(RefreshToken)
-      .where("userId = :userId", { userId })
+      .where('userId = :userId', { userId })
       .execute();
 
-    const newToken = await this.tokenRepository.create({ token, userId, expiryDate });
+    const newToken = await this.tokenRepository.create({
+      token,
+      userId,
+      expiryDate,
+    });
 
     return this.tokenRepository.save(newToken);
   }
