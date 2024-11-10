@@ -13,13 +13,21 @@ import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshToken } from './shemas/refresh-token.schema';
 import { randomUUID } from 'crypto';
+import { nanoid } from 'nanoid';
+import { ResetToken } from './shemas/reset-token.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
     @InjectRepository(RefreshToken)
     private readonly tokenRepository: Repository<RefreshToken>,
+
+    @InjectRepository(ResetToken)
+    private readonly resetRepository: Repository<ResetToken>,
+
     private jwtService: JwtService,
   ) {}
 
@@ -97,6 +105,31 @@ export class AuthService {
     user.password = NewHashedPassword;
 
     await this.userRepository.save(user);
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (user) {
+      const expiryDate = new Date();
+      expiryDate.setHours(expiryDate.getHours() + 1);
+
+      const resetToken = nanoid(64);
+
+      const rstToken = this.resetRepository.create({
+        token: resetToken,
+        userId: user.id,
+        expiryDate,
+      });
+
+      await this.userRepository.save(rstToken);
+    }
+
+    return { message: 'If this user exist, he will receive an email' };
   }
 
   async refreshTokens(refreshToken: string) {

@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { config } from 'process';
 import { RefreshToken } from './auth/shemas/refresh-token.schema';
+import { ResetToken } from './auth/shemas/reset-token.schema';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { RefreshToken } from './auth/shemas/refresh-token.schema';
           database: configService.get('DB_NAME'),
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
-          entities: [User, RefreshToken],
+          entities: [User, RefreshToken, ResetToken],
           synchronize: true,
           logging: true,
           retryAttempts: 5,

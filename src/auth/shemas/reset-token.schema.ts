@@ -1,9 +1,16 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { User } from "./user.schema";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from './user.schema';
 
-@Entity({ name: 'refresh_tokens'}) 
-export class RefreshToken {
-
+@Entity({ name: 'reset_tokens' })
+export class ResetToken {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -13,10 +20,10 @@ export class RefreshToken {
   @Column({ name: 'user_id', nullable: false })
   userId: number;
 
-  @ManyToOne(() => User, user => user.refreshTokens, {
-    onDelete: 'CASCADE'  
+  @ManyToOne(() => User, (user) => user.resetTokens, {
+    onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_id' })  
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column({ name: 'expiry_date', type: 'timestamp', nullable: false })
@@ -27,5 +34,4 @@ export class RefreshToken {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
 }
