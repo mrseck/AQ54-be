@@ -15,6 +15,7 @@ import { RefreshToken } from './shemas/refresh-token.schema';
 import { randomUUID } from 'crypto';
 import { nanoid } from 'nanoid';
 import { ResetToken } from './shemas/reset-token.schema';
+import { MailService } from 'src/services/mail.services';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +30,8 @@ export class AuthService {
     private readonly resetRepository: Repository<ResetToken>,
 
     private jwtService: JwtService,
+
+    private mailService: MailService,
   ) {}
 
   async register(registerData: registerDto) {
@@ -120,13 +123,13 @@ export class AuthService {
 
       const resetToken = nanoid(64);
 
-      const rstToken = this.resetRepository.create({
+      await this.resetRepository.create({
         token: resetToken,
         userId: user.id,
         expiryDate,
       });
-
-      await this.userRepository.save(rstToken);
+      
+      this.mailService.sendPasswordResetEmail(email, resetToken);
     }
 
     return { message: 'If this user exist, he will receive an email' };

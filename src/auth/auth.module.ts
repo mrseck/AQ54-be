@@ -5,12 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './shemas/user.schema';
 import { RefreshToken } from './shemas/refresh-token.schema';
 import { ResetToken } from './shemas/reset-token.schema';
+import { MailService } from 'src/services/mail.services';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, RefreshToken, ResetToken])
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, MailService],
 })
 export class AuthModule {}
