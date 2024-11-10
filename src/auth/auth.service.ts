@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -81,6 +82,8 @@ export class AuthService {
     return {
       ...tokens,
       username: user.username,
+      role: user.role,
+      userId: user.id,
     };
   }
 
@@ -128,11 +131,40 @@ export class AuthService {
         userId: user.id,
         expiryDate,
       });
-      
+
       this.mailService.sendPasswordResetEmail(email, resetToken);
     }
 
     return { message: 'If this user exist, he will receive an email' };
+  }
+
+  async resetPassword(newPassword: string, resetToken: string) {
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 1);
+
+    const token = await this.resetRepository.findOne({
+      where: {
+        token: resetToken,
+        expiryDate: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('Invalid link');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: token.userId,
+      },
+    });
+    if (!user) {
+      throw new InternalServerErrorException();
+    }
+
+    user.password = await bcrypt.hash(newPassword, 12);
+
+    await this.userRepository.save(user);
   }
 
   async refreshTokens(refreshToken: string) {

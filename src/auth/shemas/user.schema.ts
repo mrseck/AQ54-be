@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RefreshToken } from "./refresh-token.schema";
 import { ResetToken } from "./reset-token.schema";
+import { UserRole } from "../roles/roles.enum";
 
 @Entity({ name: 'users'})
 export class User {
@@ -16,6 +17,13 @@ export class User {
 
     @Column()
     password: string;
+
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.USER
+    })
+    role: UserRole;
 
     @OneToMany(() => RefreshToken, refreshToken => refreshToken.user)
     refreshTokens: RefreshToken[];
