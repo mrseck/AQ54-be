@@ -29,6 +29,9 @@ export class ResetToken {
   @Column({ name: 'expiry_date', type: 'timestamp', nullable: false })
   expiryDate: Date;
 
+  @Column({ name: 'used', nullable: false})
+  used: boolean
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

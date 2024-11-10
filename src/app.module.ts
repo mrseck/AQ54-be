@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth/shemas/user.schema';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
-import { config } from 'process';
 import { RefreshToken } from './auth/shemas/refresh-token.schema';
 import { ResetToken } from './auth/shemas/reset-token.schema';
 
