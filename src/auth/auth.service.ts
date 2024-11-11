@@ -1,22 +1,17 @@
 import {
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
   ForbiddenException,
   OnModuleInit,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './shemas/user.schema';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshToken } from './shemas/refresh-token.schema';
-import { randomUUID } from 'crypto';
-import { nanoid } from 'nanoid';
-import { ResetToken } from './shemas/reset-token.schema';
-import { MailService } from 'src/services/mail.services';
 import { UserRole } from './roles/roles.enum';
 import { ConfigService } from '@nestjs/config';
 
@@ -29,32 +24,29 @@ interface CreateUserDto {
 
 @Injectable()
 export class AuthService implements OnModuleInit {
+
+  private readonly logger = new Logger(AuthService.name);
+
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
-    @InjectRepository(RefreshToken)
-    private readonly tokenRepository: Repository<RefreshToken>,
-
-    @InjectRepository(ResetToken)
-    private readonly resetRepository: Repository<ResetToken>,
-
     private jwtService: JwtService,
-    private mailService: MailService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
-
   async onModuleInit() {
     await this.createDefaultAdmin();
   }
 
   private async createDefaultAdmin(): Promise<void> {
-    const adminEmail = this.configService.get('ADMIN_EMAIL')
+    const adminEmail = this.configService.get('ADMIN_EMAIL');
     const adminPassword = this.configService.get('ADMIN_PASSWORD');
     const adminUsername = this.configService.get('ADMIN_USERNAME');
 
     if (!adminEmail || !adminPassword || !adminUsername) {
-      console.warn('Default admin credentials not found in environment variables');
+      console.warn(
+        'Default admin credentials not found in environment variables',
+      );
       return;
     }
 
@@ -73,7 +65,7 @@ export class AuthService implements OnModuleInit {
       username: adminUsername,
       email: adminEmail,
       password: hashedPassword,
-      role: UserRole.ADMIN
+      role: UserRole.ADMIN,
     });
 
     await this.userRepository.save(adminUser);
@@ -83,7 +75,7 @@ export class AuthService implements OnModuleInit {
   async createUser(adminId: number, userData: CreateUserDto) {
     // Vérifier que le créateur est bien un admin
     const admin = await this.userRepository.findOne({
-      where: { id: adminId }
+      where: { id: adminId },
     });
 
     if (!admin || admin.role !== UserRole.ADMIN) {
@@ -96,7 +88,7 @@ export class AuthService implements OnModuleInit {
     const emailOrUsernameExist = await this.userRepository.findOne({
       where: [{ email }, { username }],
     });
-    
+
     if (emailOrUsernameExist) {
       throw new UnauthorizedException('Email or Username already exists');
     }
@@ -113,40 +105,43 @@ export class AuthService implements OnModuleInit {
     return this.userRepository.save(user);
   }
 
-  async login(Credentials: LoginDto) {
-    const { email, password } = Credentials;
+  async login(credentials: LoginDto) {
+    const { email, password } = credentials;
 
     const user = await this.userRepository.findOne({
       where: { email },
     });
-    
+
     if (!user) {
-      throw new UnauthorizedException(
-        'Wrong Email ! please check the Email you provided and try again',
-      );
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      throw new UnauthorizedException(
-        'Wrong Password ! please check the password you provided and try again',
-      );
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = await this.generateUserToken(user.id);
+    // Générer le token
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role
+    };
+
+    const token = this.jwtService.sign(payload); // On utilise token au lieu de accessToken
 
     return {
-      ...tokens,
+      token,  // Renommer accessToken en token
       username: user.username,
       role: user.role,
-      userId: user.id,
+      email: user.email
     };
   }
 
   async updateUserRole(adminId: number, userId: number, newRole: UserRole) {
     // Vérifier que le modificateur est bien un admin
     const admin = await this.userRepository.findOne({
-      where: { id: adminId }
+      where: { id: adminId },
     });
 
     if (!admin || admin.role !== UserRole.ADMIN) {
@@ -154,7 +149,7 @@ export class AuthService implements OnModuleInit {
     }
 
     const user = await this.userRepository.findOne({
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!user) {
@@ -188,35 +183,5 @@ export class AuthService implements OnModuleInit {
     await this.userRepository.save(user);
   }
 
-  async generateUserToken(userId) {
-    const accessToken = this.jwtService.sign({ userId }, { expiresIn: '1h' });
-    const refreshToken = randomUUID();
-
-    await this.storeRefreshToken(refreshToken, userId);
-
-    return {
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  private async storeRefreshToken(token: string, userId) {
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 1);
-
-    await this.tokenRepository
-      .createQueryBuilder()
-      .delete()
-      .from(RefreshToken)
-      .where('userId = :userId', { userId })
-      .execute();
-
-    const newToken = await this.tokenRepository.create({
-      token,
-      userId,
-      expiryDate,
-    });
-
-    return this.tokenRepository.save(newToken);
-  }
+  
 }

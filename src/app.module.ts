@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { RefreshToken } from './auth/shemas/refresh-token.schema';
 import { ResetToken } from './auth/shemas/reset-token.schema';
+import { SensorModule } from './sensor/sensor.module';
 
 @Module({
   imports: [
@@ -17,6 +18,9 @@ import { ResetToken } from './auth/shemas/reset-token.schema';
       imports: [ConfigModule],
       useFactory: async (config) => ({
         secret: config.get('JWT_SECRET'),
+        signOptions: { 
+          expiresIn: '1h',
+        },
       }),
       global: true,
       inject: [ConfigService],
@@ -43,6 +47,7 @@ import { ResetToken } from './auth/shemas/reset-token.schema';
       inject: [ConfigService],
     }),
     AuthModule,
+    SensorModule
   ],
 })
 export class AppModule {}
