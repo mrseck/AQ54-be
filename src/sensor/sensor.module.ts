@@ -5,9 +5,11 @@ import { SensorService } from './sensor.service';
 import { SensorData } from './entities/sensor.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     TypeOrmModule.forFeature([SensorData]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

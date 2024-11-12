@@ -1,24 +1,34 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, Index } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
+@Entity({ name: 'sensor_data  ' })
 export class SensorData {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  @Index()
-  sensorId: string;
+  stationName: string;
 
-  @Column('timestamp')
-  @Index()
-  timestamp: Date;
-
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('float')
   temperature: number;
 
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('float')
   humidity: number;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Column('float')
+  pressure: number;
+
+  @Column('float')
+  o3: number;
+
+  @Column('float')
+  no2: number;
+
+  @Column('float')
+  pm25: number;
+
+  @Column('float')
+  pm10: number;
+
+  @Column()
+  timestamp: Date;
 }

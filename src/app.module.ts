@@ -6,8 +6,8 @@ import { User } from './auth/shemas/user.schema';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { RefreshToken } from './auth/shemas/refresh-token.schema';
-import { ResetToken } from './auth/shemas/reset-token.schema';
 import { SensorModule } from './sensor/sensor.module';
+import { SensorData } from './sensor/entities/sensor.entity';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { SensorModule } from './sensor/sensor.module';
       imports: [ConfigModule],
       useFactory: async (config) => ({
         secret: config.get('JWT_SECRET'),
-        signOptions: { 
+        signOptions: {
           expiresIn: '1h',
         },
       }),
@@ -26,9 +26,8 @@ import { SensorModule } from './sensor/sensor.module';
       inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, SensorModule],
       useFactory: (configService: ConfigService) => {
-
         return {
           type: 'postgres',
           host: configService.get('DB_HOST'),
@@ -36,7 +35,7 @@ import { SensorModule } from './sensor/sensor.module';
           database: configService.get('DB_NAME'),
           username: configService.get('DB_USERNAME'),
           password: configService.get('DB_PASSWORD'),
-          entities: [User, RefreshToken, ResetToken],
+          entities: [User, RefreshToken, SensorData],
           synchronize: true,
           logging: true,
           retryAttempts: 5,
@@ -47,7 +46,7 @@ import { SensorModule } from './sensor/sensor.module';
       inject: [ConfigService],
     }),
     AuthModule,
-    SensorModule
+    SensorModule,
   ],
 })
 export class AppModule {}
