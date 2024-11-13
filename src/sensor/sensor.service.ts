@@ -114,4 +114,9 @@ export class SensorService {
     return queryBuilder.getRawMany();
   }
 
+  async getSensorDataCount(): Promise<number> {
+    const count = await this.sensorDataRepository.count();
+    return count * 6;
+  }
+
 }

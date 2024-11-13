@@ -23,4 +23,10 @@ export class SensorController {
       granularity,
     );
   }
+
+  @Get('data-collected')
+  async getSensorDataCount(): Promise<{ count: number }> {
+    const count = await this.sensorService.getSensorDataCount();
+    return { count };
+  }
 }   
