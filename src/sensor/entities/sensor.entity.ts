@@ -8,27 +8,27 @@ export class SensorData {
   @Column()
   stationName: string;
 
-  @Column('float')
-  temperature: number;
-
-  @Column('float')
-  humidity: number;
-
-  @Column('float')
-  pressure: number;
-
-  @Column('float')
-  o3: number;
-
-  @Column('float')
-  no2: number;
-
-  @Column('float')
-  pm25: number;
-
-  @Column('float')
-  pm10: number;
-
-  @Column()
+  @Column({ type: 'timestamp' })
   timestamp: Date;
+
+  @Column({ type: 'float', nullable: true })
+  temperature: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  humidity: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  pressure: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  o3: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  no2: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  pm25: number | null;
+
+  @Column({ type: 'float', nullable: true })
+  pm10: number | null;
 }

@@ -8,9 +8,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { RefreshToken } from './auth/shemas/refresh-token.schema';
 import { SensorModule } from './sensor/sensor.module';
 import { SensorData } from './sensor/entities/sensor.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

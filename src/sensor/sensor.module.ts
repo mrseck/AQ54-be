@@ -6,6 +6,8 @@ import { SensorData } from './entities/sensor.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HttpModule } from '@nestjs/axios';
+import { SchedulerService } from './scheduler/scheduler.service';
+import { SchedulerController } from './scheduler/scheduler.controller';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { HttpModule } from '@nestjs/axios';
       inject: [ConfigService],
     }),
   ],
-  controllers: [SensorController],
-  providers: [SensorService],
+  controllers: [SensorController, SchedulerController],
+  providers: [SensorService, SchedulerService],
 })
 export class SensorModule {}

@@ -160,7 +160,6 @@ export class AuthService implements OnModuleInit {
     return this.userRepository.save(user);
   }
 
-  // Les autres méthodes restent inchangées...
   async changePassword(userId, oldPassword: string, newPassword: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -181,6 +180,10 @@ export class AuthService implements OnModuleInit {
     const NewHashedPassword = await bcrypt.hash(newPassword, 12);
     user.password = NewHashedPassword;
     await this.userRepository.save(user);
+  }
+
+  async getUserCount(): Promise<number> {
+    return await this.userRepository.count();
   }
 
   

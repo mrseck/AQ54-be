@@ -5,7 +5,7 @@ import { AdminGuard } from "src/guards/admin.guard";
 import { SensorData } from "./entities/sensor.entity";
 
 @UseGuards(AuthGuard, AdminGuard)
-@Controller('sensor')
+@Controller('api/v1/sensor')
 export class SensorController {
   constructor(private readonly sensorService: SensorService) {}
 

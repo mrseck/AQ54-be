@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dtos/login.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
@@ -9,6 +9,7 @@ import { GetUser } from './decorators/get-user.decorator';
 
 @Controller('api/v1/auth')
 export class AuthController {
+  usersService: any;
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
@@ -23,6 +24,13 @@ export class AuthController {
     @Body() createUserData: CreateUserDto,
   ) {
     return this.authService.createUser(adminId, createUserData)
+  }
+
+  @Get('users')
+  @UseGuards(AuthGuard, AdminGuard)
+  async getUserCount() {
+    const count = await this.authService.getUserCount();
+    return { count };
   }
 
 
