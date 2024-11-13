@@ -21,7 +21,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       useFactory: async (config) => ({
         secret: config.get('JWT_SECRET'),
         signOptions: {
-          expiresIn: '1h',
+          expiresIn: '2h',
         },
       }),
       global: true,
