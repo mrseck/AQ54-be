@@ -1,0 +1,35 @@
+services:
+  aq54-be:
+    image: mrseck/aq54-be:v1
+    container_name: aq54-be
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+
+  aq54-fe:
+    image: mrseck/aq54-fe:v1
+    container_name: aq54-fe
+    restart: unless-stopped
+    depends_on:
+      - aq54-be
+    ports:
+      - 8080:80
+
+  aq54-db:
+    image: postgres:16-alpine
+    container_name: aq54-db
+    ports:
+      - 5433:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=username
+      - POSTGRES_DB=database
+
+networks:
+  default:
+    external: true
+    name: aq54

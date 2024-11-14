@@ -22,78 +22,147 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# AQ54 project Backend
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Cette documentation fourni les étapes à suivre pour deployer le projet complet ou le backend uniquement dans un environnement local.
 
-## Project setup
+Il est déjà deployé et vous pouvez y accéder à son interface via l'url suivante: (http://srv507834.hstgr.cloud:8080/)
 
-```bash
-$ npm install
+## deploiement complet du projet avec docker compose 
+
+renommer le fichier compose.example.yml en compose.yml et lancer la commande
+
+NB: la base de donnée existe déja dans le fichier compose donc il s'uffit juste de créer le fichier d'environnement et rajouter les varible et les valeur dans la partie prérequis un peu plus bas et d'executer la commande ci-dessous.
+
+```js
+docker compose up -d
 ```
 
-## Compile and run the project
+## deploiement du backend uniquement
 
-```bash
-# development
-$ npm run start
+## prérequis
 
-# watch mode
-$ npm run start:dev
+deployer une base de donnée postgres dans un conteneur docker 
 
-# production mode
-$ npm run start:prod
+```js
+services:
+  database-name:
+    image: postgres:16-alpine
+    container_name: database-name
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=username
+      - POSTGRES_DB=database
 ```
 
-## Run tests
+À la racine du projet creons un fichier .env et rajoutons les variables ci-dessous avec leurs valeurs
 
-```bash
-# unit tests
-$ npm run test
+```js
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=database
+DB_USERNAME=username
+DB_PASSWORD=password
+DB_URL=postgresql://username:password@localhost:5432/database
 
-# e2e tests
-$ npm run test:e2e
+# Token
+JWT_SECRET=AZERTYUIOPQSDFGHJKLMWXCVBNAZERTYUIOPQSDFGHJKLM
 
-# test coverage
-$ npm run test:cov
+# Admin credentials  
+ADMIN_EMAIL='admin@example.com'
+ADMIN_PASSWORD='votremotdepasse'
+ADMIN_USERNAME='Admin'
+
+NB: le compte admin sera crée automatiquement au démarrage du projet et les accès ci-dessus pourront être utilisé comme credential pour se connecter
+
+# Allow Origin 
+CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
-## Deployment
+## II - Deployer dans un environnement local
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## etape 1 : cloner le repo
 
-```bash
-$ npm install -g mau
-$ mau deploy
+```js
+git clone https://github.com/mrseck/AQ54-be.git
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## etape 2 : installer les dependances du projet
 
-## Resources
+aller dans le repertoire du projet
 
-Check out a few resources that may come in handy when working with NestJS:
+```js
+cd AQ54-be
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+puis lancer
 
-## Support
+```js
+npm i ou npm install
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## etape 3 : lancer le projet
 
-## Stay in touch
+```js
+npm run start:dev 
+ou 
+npm run start
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+la documentation swagger est disponible sur
 
-## License
+```js
+http://localhost:3000/api/docs
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+puis lancer dans un navigateur l'url du frontend
+
+```js
+http://localhost:5173
+```
+
+## III - Deployer avec docker
+
+## etape 1 : cloner le repo
+
+```js
+git clone https://github.com/mrseck/AQ54-be.git
+```
+
+## etape 2 : build l'image puis l'executer
+
+aller dans le repertoire du projet
+
+```js
+cd AQ54-be
+```
+
+puis construire l'image
+
+```js
+docker build -t aq54-be .
+```
+
+enfin executer l'image
+
+```js
+docker run -p 3000:3000 aq54-fe
+```
+
+la documentation swagger est disponible sur
+
+```js
+http://localhost:3000/api/docs
+```
+
+puis lancer dans un navigateur l'url
+
+```js
+http://localhost:8080
+```
