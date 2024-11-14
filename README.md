@@ -28,11 +28,15 @@ Cette documentation fourni les étapes à suivre pour deployer le projet complet
 
 Il est déjà deployé et vous pouvez y accéder à son interface via l'url suivante: (http://srv507834.hstgr.cloud:8080/)
 
-## deploiement complet du projet avec docker compose 
+## deploiement complet du projet avec docker compose
 
-renommer le fichier compose.example.yml en compose.yml et lancer la commande
+renommer le fichier compose.example.yml en compose.yml 
 
-NB: la base de donnée existe déja dans le fichier compose donc il s'uffit juste de créer le fichier d'environnement et rajouter les varible et les valeur dans la partie prérequis un peu plus bas et d'executer la commande ci-dessous.
+créer votre image à l'aide de la sexion III - Deployer avec docker
+
+puis renseignez le nom de votre image dans la partie image du dockeer compose
+
+NB: la base de donnée existe déja dans le fichier compose donc il s'uffit juste de créer le fichier d'environnement et rajouter les variables et les valeurs dans la partie prérequis un peu plus bas et d'executer la commande ci-dessous.
 
 ```js
 docker compose up -d
@@ -42,7 +46,7 @@ docker compose up -d
 
 ## prérequis
 
-deployer une base de donnée postgres dans un conteneur docker 
+deployer une base de donnée postgres dans un conteneur docker
 
 ```js
 services:
@@ -73,19 +77,18 @@ DB_URL=postgresql://username:password@localhost:5432/database
 # Token
 JWT_SECRET=AZERTYUIOPQSDFGHJKLMWXCVBNAZERTYUIOPQSDFGHJKLM
 
-# Admin credentials  
+# Admin Credentials
 ADMIN_EMAIL='admin@example.com'
 ADMIN_PASSWORD='votremotdepasse'
 ADMIN_USERNAME='Admin'
 
 NB: le compte admin sera crée automatiquement au démarrage du projet et les accès ci-dessus pourront être utilisé comme credential pour se connecter
 
-# Allow Origin 
+# Allow Origins
 CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
 ## II - Deployer dans un environnement local
-
 
 ## etape 1 : cloner le repo
 
@@ -110,8 +113,8 @@ npm i ou npm install
 ## etape 3 : lancer le projet
 
 ```js
-npm run start:dev 
-ou 
+npm run start:dev
+ou
 npm run start
 ```
 

@@ -1,6 +1,6 @@
 services:
   aq54-be:
-    image: mrseck/aq54-be:v1
+    image: imageconteneurbackend
     container_name: aq54-be
     restart: unless-stopped
     env_file:
@@ -9,7 +9,7 @@ services:
       - 3000:3000
 
   aq54-fe:
-    image: mrseck/aq54-fe:v1
+    image: imageconteneurfrontend
     container_name: aq54-fe
     restart: unless-stopped
     depends_on:
