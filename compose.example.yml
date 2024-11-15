@@ -13,7 +13,7 @@ services:
     container_name: aq54-fe
     restart: unless-stopped
     depends_on:
-      - aq54-be
+      - imageconteneurbackend
     ports:
       - 8080:80
 
